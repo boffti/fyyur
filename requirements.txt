@@ -3,3 +3,4 @@ python-dateutil==2.6.0
 flask-moment
 flask-wtf
 python-dotenv==0.12.0
+flask_sqlalchemy
