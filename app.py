@@ -23,9 +23,9 @@ import data_dict
 
 app = Flask(__name__)
 moment = Moment(app)
-db = db_init(app)
 
-# TODO: connect to a local postgresql database
+# TODO: [COMPLETED] connect to a local postgresql database 
+db = db_init(app)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -83,32 +83,10 @@ def past_shows(shows):
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
+  # TODO: [COMPLETED] replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
-
   location = db.session.query(Venue.city, Venue.state).distinct()
-  db_data = []
+  data = []
   for venue in location:
       venue = dict(zip(('city', 'state'), venue))
       venue['venues'] = []
@@ -120,35 +98,28 @@ def venues():
               'num_upcoming_shows': len(upcoming_shows(shows))
           }
           venue['venues'].append(venues_data)
-      db_data.append(venue)
+      data.append(venue)
 
-  print(data)
-  print(db_data)
-  
-  data.append(db_data)
-
-  return render_template('pages/venues.html', areas=db_data)
+  return render_template('pages/venues.html', areas=data)
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+  # TODO: [COMPLETED] implement search on venues with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+  search_term = request.form.get('search_term', '')
+  result = Venue.query.filter(Venue.name.ilike(f'%{search_term}%'))
+
   response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
+    "count": result.count(),
+    "data": Venue.query.filter(Venue.name.ilike(f'%{search_term}%'))
   }
-  return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+  return render_template('pages/search_venues.html', results=response, search_term=search_term)
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
-  # dummy_data = data_dict.venue_data
+  # TODO: [COMPLETED] replace with real venue data from the venues table, using venue_id
 
   venue = Venue.query.filter_by(id=venue_id).first()
   shows = Show.query.filter_by(venue_id=venue_id).all()
@@ -172,7 +143,6 @@ def show_venue(venue_id):
       "upcoming_shows_count": len(upcoming_shows(shows))
   }
 
-  # data = list(filter(lambda d: d['id'] == venue_id, dummy_data))[0]
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
@@ -185,8 +155,8 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
+  # TODO: [COMPLETED] insert form data as a new Venue record in the db, instead
+  # TODO: [COMPLETED] modify data to be the data object returned from db insertion
   error = False
   try:
     website = ''
@@ -241,17 +211,7 @@ def delete_venue(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  # TODO: replace with real data returned from querying the database
-  # data=[{
-  #   "id": 4,
-  #   "name": "Guns N Petals",
-  # }, {
-  #   "id": 5,
-  #   "name": "Matt Quevedo",
-  # }, {
-  #   "id": 6,
-  #   "name": "The Wild Sax Band",
-  # }]
+  # TODO: [COMPLETED] replace with real data returned from querying the database
   data = []
   for artist in Artist.query.all():
     data.append({
@@ -262,27 +222,27 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
+  # TODO: [COMPLETED] implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
+  search_term = request.form.get('search_term', '')
+  result = Artist.query.filter(Artist.name.ilike(f'%{search_term}%'))
+
   response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
+    "count": result.count(),
+    "data": result
   }
-  return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+
+  return render_template('pages/search_artists.html', results=response, search_term=search_term)
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
+  # TODO: [COMPLETED] replace with real venue data from the venues table, using venue_id
   response_data = data_dict.artist_data
 
-  artist = db.session.query(Artist).get(artist_id)
-  shows = db.session.query(Show).filter_by(artist_id=artist_id)
+  artist = Artist.query.get(artist_id)
+  shows = Show.query.filter_by(artist_id=artist_id)
   past_shows = []
   upcoming_shows = []
   current_time = datetime.now()
@@ -316,9 +276,6 @@ def show_artist(artist_id):
   }
 
   response_data.append(data)
-
-
-  # data = list(filter(lambda d: d['id'] == artist_id, response_data))[0]
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
@@ -426,24 +383,20 @@ def create_artist_submission():
 
   return render_template('pages/home.html')
 
-# Artist(name='Aneesh', city='Bangalore', state='ka', phone='123', genres='abc', facebook_link='fb.com', image_link='abc.com', website='abcd.com', seeking_venue=True, seeking_description='abcdef')
 #  Shows
 #  ----------------------------------------------------------------
 
 @app.route('/shows')
 def shows():
   # displays list of shows at /shows
-  # TODO: replace with real venues data.
+  # TODO: [COMPLETED] replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  
-  response_data = data_dict.shows_data
-  shows = db.session.query(Show).all()
-  print(shows)
+  shows = Show.query.all()
 
+  response_data = []
   for show in shows:
     venue = Venue.query.get(show.venue_id)
     artist = Artist.query.get(show.artist_id)
-    print(artist.name)
     response_data.append({
       'venue_id': show.venue_id,
       'venue_name': venue.name,
@@ -464,7 +417,7 @@ def create_shows():
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
-  # TODO: insert form data as a new Show record in the db, instead
+  # TODO: [COMPLETED] insert form data as a new Show record in the db, instead
   error = False
   date_format = '%Y-%m-%d %H:%M:%S'
   try:
