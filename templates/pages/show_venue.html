@@ -24,10 +24,12 @@
 			<i class="fas fa-phone-alt"></i> {% if venue.phone %}{{ venue.phone }}{% else %}No Phone{% endif %}
 		</p>
 		<p>
-			<i class="fas fa-link"></i> {% if venue.website %}<a href="{{ venue.website }}" target="_blank">{{ venue.website }}</a>{% else %}No Website{% endif %}
+			<i class="fas fa-link"></i> {% if venue.website %}<a href="{{ venue.website }}"
+				target="_blank">{{ venue.website }}</a>{% else %}No Website{% endif %}
 		</p>
 		<p>
-			<i class="fab fa-facebook-f"></i> {% if venue.facebook_link %}<a href="{{ venue.facebook_link }}" target="_blank">{{ venue.facebook_link }}</a>{% else %}No Facebook Link{% endif %}
+			<i class="fab fa-facebook-f"></i> {% if venue.facebook_link %}<a href="{{ venue.facebook_link }}"
+				target="_blank">{{ venue.facebook_link }}</a>{% else %}No Facebook Link{% endif %}
 		</p>
 		{% if venue.seeking_talent %}
 		<div class="seeking">
@@ -36,7 +38,7 @@
 				<i class="fas fa-quote-left"></i> {{ venue.seeking_description }} <i class="fas fa-quote-right"></i>
 			</div>
 		</div>
-		{% else %}	
+		{% else %}
 		<p class="not-seeking">
 			<i class="fas fa-moon"></i> Not currently seeking talent
 		</p>
@@ -47,7 +49,8 @@
 	</div>
 </div>
 <section>
-	<h2 class="monospace">{{ venue.upcoming_shows_count }} Upcoming {% if venue.upcoming_shows_count == 1 %}Show{% else %}Shows{% endif %}</h2>
+	<h2 class="monospace">{{ venue.upcoming_shows_count }} Upcoming
+		{% if venue.upcoming_shows_count == 1 %}Show{% else %}Shows{% endif %}</h2>
 	<div class="row">
 		{%for show in venue.upcoming_shows %}
 		<div class="col-sm-4">
@@ -61,7 +64,8 @@
 	</div>
 </section>
 <section>
-	<h2 class="monospace">{{ venue.past_shows_count }} Past {% if venue.past_shows_count == 1 %}Show{% else %}Shows{% endif %}</h2>
+	<h2 class="monospace">{{ venue.past_shows_count }} Past
+		{% if venue.past_shows_count == 1 %}Show{% else %}Shows{% endif %}</h2>
 	<div class="row">
 		{%for show in venue.past_shows %}
 		<div class="col-sm-4">
@@ -74,6 +78,20 @@
 		{% endfor %}
 	</div>
 </section>
+<div>
+	<a id="btnVenueDelete" data-id="{{ venue.id }}" class="btn btn-danger" style="margin-bottom: 5px;"><span style="margin-right: 5px;" class="fas fa-trash"></span> Delete Venue</a>
+<script>
+	const deleteBtn = document.querySelector('#btnVenueDelete');
+	deleteBtn.onclick = function (e) {
+		console.log('delete', deleteBtn.dataset.id);
+		fetch('/venues/' + deleteBtn.dataset.id, {
+			method: 'DELETE',
+		})
+		.then(response => {
+			// Because FLASK Redirect was not working
+			window.location = "/";
+		})
+	}
+</script>
 
 {% endblock %}
-
