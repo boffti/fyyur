@@ -29,7 +29,6 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(120))
 
-    # artists = db.relationship('Artist', secondary='show')
     shows = db.relationship('Show', backref='venue', lazy=True)
 
     def __repr__(self):
@@ -52,7 +51,6 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(120))
 
-    # venues = db.relationship('Venue', secondary='show')
     shows = db.relationship('Show', backref='artist', lazy=True)
 
     def __repr__(self):
@@ -65,9 +63,6 @@ class Show(db.Model):
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'), nullable=False)
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'), nullable=False)
     start_time = db.Column(db.DateTime, nullable=False)
-
-    # venue = db.relationship('Venue')
-    # artist = db.relationship('Artist')
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
