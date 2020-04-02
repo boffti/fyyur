@@ -127,7 +127,7 @@ def show_venue(venue_id):
   data = {
       "id": venue.id,
       "name": venue.name,
-      "genres": [venue.genres],
+      "genres": venue.genres.split(','),
       "address": venue.address,
       "city": venue.city,
       "state": venue.state,
@@ -168,7 +168,7 @@ def create_venue_submission():
     if 'seeking_description' in request.form:
       seeking_description = request.form['seeking_description']
     if 'website' in request.form:
-      website = rrequest.form['website']
+      website = request.form['website']
     if 'image_link' in request.form:
       image_link = request.form['image_link']
     venue = Venue()
@@ -177,7 +177,7 @@ def create_venue_submission():
     venue.state = request.form['state']
     venue.address = request.form['address']
     venue.phone = request.form['phone']
-    venue.genres = request.form['genres']
+    venue.genres = ','.join(request.form.getlist('genres'))
     venue.facebook_link = request.form['facebook_link']
     venue.website = website
     venue.image_link = image_link
@@ -185,10 +185,10 @@ def create_venue_submission():
     venue.seeking_description = seeking_description
     db.session.add(venue)
     db.session.commit()
-  except:
+  except Exception as e:
       error = True
+      print(f'Error ==> {e}')
       db.session.rollback()
-      print(sys.exc_info())
   finally:
     db.session.close()
     if error:
@@ -202,14 +202,19 @@ def create_venue_submission():
 def delete_venue(venue_id):
   # TODO: [COMPLETED] Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+  error = False
   try:
     venue = Venue.query.get(venue_id)
     db.session.delete(venue)
     db.session.commit()
-  except:
+  except Exception as e:
+    error = True
+    print(f'Error ==> {e}')
     db.session.rollback()
   finally:
     db.session.close()
+    if error: flash(f'An error occurred. Venue {venue_id} could not be deleted.')
+    else : flash(f'Venue {venue_id} was successfully deleted.')
   # TODO: [COMPLETED] BONUS CHALLENGE:  Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
   return redirect(url_for('index'))
@@ -254,7 +259,7 @@ def show_artist(artist_id):
   upcoming_shows = []
   current_time = datetime.now()
 
-  # Filter shows by upcoming and past
+  # Filter Shows
   for show in shows:
     data = {
           "venue_id": show.venue_id,
@@ -270,7 +275,7 @@ def show_artist(artist_id):
   data={
     "id": artist.id,
     "name": artist.name,
-    "genres": [artist.genres],
+    "genres": artist.genres.split(','),
     "city": artist.city,
     "state": artist.state,
     "phone": artist.phone,
@@ -289,29 +294,53 @@ def show_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
-  form = ArtistForm()
-  artist={
-    "id": 4,
-    "name": "Guns N Petals",
-    "genres": ["Rock n Roll"],
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "326-123-5000",
-    "website": "https://www.gunsnpetalsband.com",
-    "facebook_link": "https://www.facebook.com/GunsNPetals",
-    "seeking_venue": True,
-    "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-  }
-  # TODO: populate form with fields from artist with ID <artist_id>
+  artist = Artist.query.get(artist_id)
+  form = ArtistForm(obj=artist)
+  # TODO: [COMPLETED] populate form with fields from artist with ID <artist_id>
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
+  # TODO: [COMPLETED] take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
+  error = False
+  try:
+    website = ''
+    seeking_venue = 0
+    seeking_description = ''
+    image_link = ''
 
+    if 'website' in request.form:
+      website = request.form['website']
+    if 'image_link' in request.form:
+      image_link = request.form['image_link']
+    if 'seeking_venue' in request.form:
+      seeking_venue = request.form['seeking_venue']
+    if 'seeking_description' in request.form:
+      seeking_description = request.form['seeking_description']
+
+    artist = Artist.query.get(artist_id)
+    artist.name = request.form['name']
+    artist.city = request.form['city']
+    artist.state = request.form['state']
+    artist.phone = request.form['phone']
+    artist.genres = ','.join(request.form.getlist('genres'))
+    artist.facebook_link = request.form['facebook_link']
+    artist.website = website
+    artist.image_link = image_link
+    artist.seeking_venue = seeking_venue
+    artist.seeking_description = seeking_description
+    db.session.commit()
+  except Exception as e:
+    error = True
+    print(f'Error ==> {e}')
+    db.session.rollback()
+  finally:
+    db.session.close()
+    if error: flash('An error occurred. Artist ' + request.form['name'] + ' could not be updated.')
+    else: flash('Artist ' + request.form['name'] + ' was updated successfully.')
   return redirect(url_for('show_artist', artist_id=artist_id))
+
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
@@ -369,7 +398,7 @@ def create_artist_submission():
     artist.city = request.form['city']
     artist.state = request.form['state']
     artist.phone = request.form['phone']
-    artist.genres = request.form['genres']
+    artist.genres = ','.join(request.form.getlist('genres'))
     artist.facebook_link = request.form['facebook_link']
     artist.image_link = image_link
     artist.website = website
@@ -377,16 +406,14 @@ def create_artist_submission():
     artist.seeking_description = seeking_description
     db.session.add(artist)
     db.session.commit()
-  except:
+  except Exception as e:
       error = True
+      print(f'Error ==> {e}')
       db.session.rollback()
-      print(sys.exc_info())
   finally:
       db.session.close()
-      if error:
-          flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
-      else:
-          flash('Artist ' + request.form['name'] +' was successfully listed!')
+      if error: flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
+      else: flash('Artist ' + request.form['name'] +' was successfully listed!')
 
   return render_template('pages/home.html')
 
@@ -434,16 +461,14 @@ def create_show_submission():
     show.start_time = datetime.strptime(request.form['start_time'], date_format)
     db.session.add(show)
     db.session.commit()
-  except:
+  except Exception as e:
     error = True
+    print(f'Error ==> {e}')
     db.session.rollback()
-    print(sys.exc_info())
   finally:
     db.session.close()
-    if error:
-      flash('An error occurred. Show could not be listed.')
-    else:
-      flash('Show was successfully listed!')
+    if error: flash('An error occurred. Show could not be listed.')
+    else: flash('Show was successfully listed!')
 
   return render_template('pages/home.html')
 
