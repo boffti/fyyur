@@ -78,20 +78,23 @@
 		{% endfor %}
 	</div>
 </section>
-<div>
-	<a id="btnVenueDelete" data-id="{{ venue.id }}" class="btn btn-danger" style="margin-bottom: 5px;"><span style="margin-right: 5px;" class="fas fa-trash"></span> Delete Venue</a>
-<script>
-	const deleteBtn = document.querySelector('#btnVenueDelete');
-	deleteBtn.onclick = function (e) {
-		console.log('delete', deleteBtn.dataset.id);
-		fetch('/venues/' + deleteBtn.dataset.id, {
-			method: 'DELETE',
-		})
-		.then(response => {
-			// Because FLASK Redirect was not working
-			window.location = "/";
-		})
-	}
-</script>
+<div style="display: flex;">
+		<a class="btn btn-primary" href="/venues/{{ venue.id }}/edit" style="margin-right: 10px;"><span class="fas fa-edit" style="margin-right: 5px;"></span> Edit</a>
+	<a id="btnVenueDelete" data-id="{{ venue.id }}" class="btn btn-danger"><span
+			style="margin-right: 5px;" class="fas fa-trash"></span> Delete</a>
+	</div>
+	<script>
+		const deleteBtn = document.querySelector('#btnVenueDelete');
+		deleteBtn.onclick = function (e) {
+			console.log('delete', deleteBtn.dataset.id);
+			fetch('/venues/' + deleteBtn.dataset.id, {
+					method: 'DELETE',
+				})
+				.then(response => {
+					// Because FLASK Redirect was not working
+					window.location = "/";
+				})
+		}
+	</script>
 
-{% endblock %}
+	{% endblock %}

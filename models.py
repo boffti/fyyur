@@ -34,7 +34,7 @@ class Venue(db.Model):
     def __repr__(self):
         return f'<Venue {self.id} {self.name}>'
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO: [COMPLETED] implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
     __tablename__ = 'artists'
@@ -64,6 +64,6 @@ class Show(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'), nullable=False)
     start_time = db.Column(db.DateTime, nullable=False)
 
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
+    # TODO: [COMPLETED] implement any missing fields, as a database migration using Flask-Migrate
 
-# TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+# TODO [COMPLETED] Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
